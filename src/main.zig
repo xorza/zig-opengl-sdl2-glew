@@ -14,23 +14,23 @@ pub fn main() !void {
     defer sdl.SDL_Quit();
 
     const window_flags = sdl.SDL_WINDOW_RESIZABLE | sdl.SDL_WINDOW_OPENGL;
-    const screen = sdl.SDL_CreateWindow("Window", sdl.SDL_WINDOWPOS_UNDEFINED, sdl.SDL_WINDOWPOS_UNDEFINED, 800, 600, window_flags) orelse {
+    const window = sdl.SDL_CreateWindow("Window", sdl.SDL_WINDOWPOS_UNDEFINED, sdl.SDL_WINDOWPOS_UNDEFINED, 800, 600, window_flags) orelse {
         sdl.SDL_Log("Unable to create window: %s", sdl.SDL_GetError());
         return error.SDLInitializationFailed;
     };
-    defer sdl.SDL_DestroyWindow(screen);
+    defer sdl.SDL_DestroyWindow(window);
 
-    const renderer = sdl.SDL_CreateRenderer(screen, -1, 0) orelse {
+    const renderer = sdl.SDL_CreateRenderer(window, -1, 0) orelse {
         sdl.SDL_Log("Unable to create renderer: %s", sdl.SDL_GetError());
         return error.SDLInitializationFailed;
     };
     defer sdl.SDL_DestroyRenderer(renderer);
 
-    while (true) {
+    mainloop: while (true) {
         var event: sdl.SDL_Event = undefined;
         while (sdl.SDL_PollEvent(&event) != 0) {
             switch (event.type) {
-                sdl.SDL_QUIT => break,
+                sdl.SDL_QUIT => break :mainloop,
                 else => {},
             }
         }
