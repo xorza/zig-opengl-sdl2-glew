@@ -5,6 +5,7 @@ const sdl = @cImport({
     @cInclude("SDL_opengl.h");
 });
 const gl = @cImport({
+    @cDefine("GLEW_STATIC", "1");
     @cInclude("glew.h");
     @cInclude("Windows.h");
     @cInclude("gl.h");
