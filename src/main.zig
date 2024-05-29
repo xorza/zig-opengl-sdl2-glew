@@ -1,6 +1,14 @@
 const sdl = @cImport({
     @cInclude("SDL.h");
     @cInclude("SDL_render.h");
+    @cInclude("SDL_video.h");
+    @cInclude("SDL_opengl.h");
+});
+const gl = @cImport({
+    @cInclude("glew.h");
+    @cInclude("Windows.h");
+    @cInclude("gl.h");
+    // @cInclude("glcorearb.h");
 });
 
 const std = @import("std");
@@ -12,6 +20,16 @@ pub fn main() !void {
         return error.SDLInitializationFailed;
     }
     defer sdl.SDL_Quit();
+
+    _ = sdl.SDL_GL_SetAttribute(sdl.SDL_GL_DOUBLEBUFFER, 1);
+    _ = sdl.SDL_GL_SetAttribute(sdl.SDL_GL_ACCELERATED_VISUAL, 1);
+    _ = sdl.SDL_GL_SetAttribute(sdl.SDL_GL_RED_SIZE, 8);
+    _ = sdl.SDL_GL_SetAttribute(sdl.SDL_GL_GREEN_SIZE, 8);
+    _ = sdl.SDL_GL_SetAttribute(sdl.SDL_GL_BLUE_SIZE, 8);
+    _ = sdl.SDL_GL_SetAttribute(sdl.SDL_GL_ALPHA_SIZE, 8);
+    _ = sdl.SDL_GL_SetAttribute(sdl.SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    _ = sdl.SDL_GL_SetAttribute(sdl.SDL_GL_CONTEXT_MINOR_VERSION, 6);
+    _ = sdl.SDL_GL_SetAttribute(sdl.SDL_GL_CONTEXT_PROFILE_MASK, sdl.SDL_GL_CONTEXT_PROFILE_CORE);
 
     const window_flags = sdl.SDL_WINDOW_RESIZABLE | sdl.SDL_WINDOW_OPENGL;
     const window = sdl.SDL_CreateWindow("Window", sdl.SDL_WINDOWPOS_UNDEFINED, sdl.SDL_WINDOWPOS_UNDEFINED, 800, 600, window_flags) orelse {
@@ -26,6 +44,33 @@ pub fn main() !void {
     };
     defer sdl.SDL_DestroyRenderer(renderer);
 
+    const gl_context = sdl.SDL_GL_CreateContext(window) orelse {
+        sdl.SDL_Log("Unable to create OpenGL context: %s", sdl.SDL_GetError());
+        return error.SDLInitializationFailed;
+    };
+    defer sdl.SDL_GL_DeleteContext(gl_context);
+
+    _ = sdl.SDL_GL_MakeCurrent(window, gl_context);
+
+    _ = gl.glewInit();
+
+    {
+        const version = gl.glGetString(gl.GL_VERSION);
+        std.debug.print("OpenGL version: {s}\n", .{version});
+
+        var contextProfile: c_int = undefined;
+        gl.glGetIntegerv(gl.GL_CONTEXT_PROFILE_MASK, &contextProfile);
+        if ((contextProfile & gl.GL_CONTEXT_CORE_PROFILE_BIT) != 0) {
+            std.debug.print("Core profile\n", .{});
+        } else {
+            std.debug.print("Not a core profile\n", .{});
+        }
+    }
+
+    var tex_id: c_uint = undefined;
+    _ = gl.__glewCreateTextures.?(gl.GL_TEXTURE_2D, 1, &tex_id);
+    std.debug.print("Texture ID: {d}\n", .{tex_id});
+
     mainloop: while (true) {
         var event: sdl.SDL_Event = undefined;
         while (sdl.SDL_PollEvent(&event) != 0) {
@@ -35,19 +80,14 @@ pub fn main() !void {
             }
         }
 
-        _ = sdl.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        _ = sdl.SDL_RenderClear(renderer);
+        _ = sdl.SDL_GL_GetCurrentContext();
 
-        const rect = sdl.SDL_Rect{
-            .x = 100,
-            .y = 100,
-            .w = 200,
-            .h = 100,
-        };
-        _ = sdl.SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-        _ = sdl.SDL_RenderFillRect(renderer, &rect);
+        gl.glViewport(0, 0, 800, 600);
+        gl.glClearColor(0.1, 0.05, 0.1, 1.01);
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT);
 
-        sdl.SDL_RenderPresent(renderer);
+        sdl.SDL_GL_SwapWindow(window);
+
         sdl.SDL_Delay(17);
     }
 }
