@@ -35,7 +35,7 @@ pub fn main() !void {
             }
         }
 
-        _ = sdl.SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+        _ = sdl.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         _ = sdl.SDL_RenderClear(renderer);
 
         const rect = sdl.SDL_Rect{
