@@ -23,7 +23,6 @@ pub fn build(b: *std.Build) void {
         exe.linkSystemLibrary("SDL2");
     }
     { // OpenGL
-        // exe.addIncludePath(.{ .path = "C:/Programs/Zig/lib/libc/include/any-windows-any/GL/" });
         exe.addIncludePath(.{ .path = "C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/um/gl/" });
         exe.addObjectFile(.{ .path = "C:/Program Files (x86)/Windows Kits/10/Lib/10.0.26100.0/um/x64/OpenGL32.lib" });
     }

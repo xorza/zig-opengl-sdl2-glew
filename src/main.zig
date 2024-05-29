@@ -8,7 +8,6 @@ const gl = @cImport({
     @cInclude("glew.h");
     @cInclude("Windows.h");
     @cInclude("gl.h");
-    // @cInclude("glcorearb.h");
 });
 
 const std = @import("std");
@@ -51,10 +50,12 @@ pub fn main() !void {
     defer sdl.SDL_GL_DeleteContext(gl_context);
 
     _ = sdl.SDL_GL_MakeCurrent(window, gl_context);
+    if (gl.glewInit() != gl.GLEW_OK) {
+        sdl.SDL_Log("Unable to initialize GLEW");
+        return error.SDLInitializationFailed;
+    }
 
-    _ = gl.glewInit();
-
-    {
+    { // Print OpenGL version and profile
         const version = gl.glGetString(gl.GL_VERSION);
         std.debug.print("OpenGL version: {s}\n", .{version});
 
@@ -79,8 +80,6 @@ pub fn main() !void {
                 else => {},
             }
         }
-
-        _ = sdl.SDL_GL_GetCurrentContext();
 
         gl.glViewport(0, 0, 800, 600);
         gl.glClearColor(0.1, 0.05, 0.1, 1.01);
