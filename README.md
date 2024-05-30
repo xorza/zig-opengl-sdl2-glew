@@ -1,1 +1,1 @@
-Zig sample project with statically links SDL2 library and initializes a window.
+Sample Zig project linked with SDL2 and GLEW libraries. Initializes a window and OpenGLContext.
